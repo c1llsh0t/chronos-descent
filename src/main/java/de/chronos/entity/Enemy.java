@@ -60,7 +60,7 @@ public final class Enemy extends Entity {
         }
         updateBaseTimers(dt, world);
         if (attackCooldownTimer > 0.0) {
-            attackCooldownTimer = Math.max(0.0, attackCooldownTimer - dt);
+            attackCooldownTimer = Math.max(0.0, attackCooldownTimer - dt * world.getDifficulty().enemyAttackRate);
         }
         if (contactCooldown > 0.0) {
             contactCooldown = Math.max(0.0, contactCooldown - dt);

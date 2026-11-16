@@ -152,7 +152,7 @@
 
     populateFloorEntities() {
       const d = this.difficulty, f = this.currentFloor;
-      const hpScale = d.enemyHealthMultiplier * (1 + (f - 1) * 0.35);
+      const hpScale = d.enemyHealthMultiplier * (1 + (f - 1) * CH.Balance.FLOOR_HP_SCALING);
       const spdScale = d.enemySpeedMultiplier * (1 + (f - 1) * 0.06);
       for (const room of this.map.rooms) {
         const c = room.centerWorld();
@@ -166,7 +166,7 @@
             this.props.push(new InteractiveProp(c.x + 42, c.y, 'RELIC_ALTAR'));
             break;
           case 'COMBAT': {
-            const count = this.random.nextInt(3 + f, 5 + f);
+            const count = this.random.nextInt(3 + f, 5 + f) + d.extraEnemiesPerRoom;
             for (let i = 0; i < count; i++) {
               const p = this.findFreeSpot(room, 18);
               if (p) this.enemies.push(new Enemy(p.x, p.y, this.pickEnemyForFloor(f), room.id, hpScale, spdScale));
@@ -180,7 +180,7 @@
           case 'BOSS':
             this.props.push(new InteractiveProp(c.x, c.y - 46, 'EXIT_PORTAL'));
             if (f < Config.MAX_FLOORS) {
-              const count = 3 + f;
+              const count = 3 + f + d.extraEnemiesPerRoom;
               for (let i = 0; i < count; i++) {
                 const p = this.findFreeSpot(room, 18);
                 if (p) {
@@ -238,7 +238,7 @@
       this.map.updateFogOfWar(player.x, player.y, Config.VISION_RADIUS_TILES);
 
       if (this.trapTimer >= 2.1 && !player.isInvulnerable()) {
-        if (map.getTile(map.worldToTile(player.x), map.worldToTile(player.y)) === CH.Tile.SPIKE_TRAP) this.damagePlayer(12, 0, 0);
+        if (map.getTile(map.worldToTile(player.x), map.worldToTile(player.y)) === CH.Tile.SPIKE_TRAP) this.damagePlayer(CH.Balance.SPIKE_DAMAGE, 0, 0);
       }
 
       for (const prop of this.props) prop.pulseTime += dt;
@@ -502,7 +502,7 @@
         const coins = e.type.isBoss ? 8 : r.nextInt(1, 3);
         for (let i = 0; i < coins; i++) this.pickups.push(new Pickup(e.x, e.y, 'GOLD_COIN', 5, r.nextDouble(-90, 90), r.nextDouble(-90, 90)));
       }
-      if (r.chance(0.14)) {
+      if (r.chance(CH.Balance.POTION_DROP_CHANCE)) {
         this.pickups.push(new Pickup(e.x, e.y, r.chance(0.65) ? 'HEALTH_POTION' : 'SHIELD_ORB', 18, r.nextDouble(-50, 50), r.nextDouble(-50, 50)));
       }
       if (e.type === EnemyType.ELDER_SLIME) {
@@ -524,7 +524,9 @@
     damagePlayer(amount, kx, ky) {
       const p = this.player;
       if (p.isInvulnerable() || this.runFinished) return;
-      p.invulnTimer = 0.42;
+      // Jeder Schaden am Spieler stammt von Gegnern oder Fallen: hier zentral skalieren
+      amount *= this.difficulty.enemyDamageMultiplier * (1 + (this.currentFloor - 1) * CH.Balance.FLOOR_DAMAGE_SCALING);
+      p.invulnTimer = CH.Balance.PLAYER_HIT_INVULN;
       p.hitFlashTimer = 0.16;
       p.shieldRegenDelay = 4.0;
       p.applyKnockback(kx, ky);
@@ -569,6 +571,7 @@
     getParticles() { return this.particles; }
     getCamera() { return this.camera; }
     getRandom() { return this.random; }
+    getDifficulty() { return this.difficulty; }
     spawnProjectile(p) { this.pendingProjectiles.push(p); }
     spawnEnemy(e) { this.pendingEnemies.push(e); }
     spawnHazardZone(z) { this.pendingHazardZones.push(z); }

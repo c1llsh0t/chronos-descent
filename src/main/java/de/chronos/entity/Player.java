@@ -98,7 +98,7 @@ public final class Player extends Entity {
             level++;
             xpToNext = (int) Math.round(xpToNext * 1.32 + 25);
             maxHp += 8.0;
-            heal(18.0);
+            heal(GameConfig.LEVEL_UP_HEAL);
             pendingLevelUps++;
             leveled = true;
         }
@@ -171,7 +171,7 @@ public final class Player extends Entity {
         if (shieldRegenDelay > 0.0) {
             shieldRegenDelay -= dt;
         } else if (shield < maxShield) {
-            double regenRate = 4.5 + 3.0 * getUpgradeCount("AEGIS_WARD");
+            double regenRate = GameConfig.SHIELD_REGEN + 3.0 * getUpgradeCount("AEGIS_WARD");
             shield = Math.min(maxShield, shield + regenRate * dt);
         }
 

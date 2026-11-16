@@ -234,6 +234,20 @@ src/
 
 ---
 
+## Änderungen in Version 1.1.0 – deutlich schwerer
+
+- **Gegner sind gefährlicher:** Die Schwierigkeit erhöht jetzt auch Gegner-Schaden, Angriffstempo und die Anzahl Gegner pro Raum (vorher nur Leben & Tempo)
+
+| | Leben | Tempo | Schaden | Angriffstempo | Zusatzgegner/Raum | Punkte |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| Normal | ×1.25 | ×1.08 | ×1.4 | ×1.2 | +1 | ×1.0 |
+| Schwer | ×1.7 | ×1.2 | ×1.9 | ×1.4 | +2 | ×1.5 |
+| Alptraum | ×2.2 | ×1.32 | ×2.5 | ×1.65 | +3 | ×2.2 |
+
+- **Tiefere Ebenen:** +45 % Gegner-Leben und +20 % Gegner-Schaden pro Ebene
+- **Malakor** hat 850 statt 520 Grund-Leben
+- **Spieler:** Kürzere Unverwundbarkeit nach Treffern, weniger Heilung beim Stufenaufstieg, langsamere Schild-Regeneration, seltenere Heiltränke, Stachelfallen schmerzhafter
+
 ## Änderungen in Version 1.0.1
 
 - **Web-Version** (`docs/`) – spielbar im Browser über GitHub Pages

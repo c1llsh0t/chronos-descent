@@ -68,7 +68,8 @@ public final class BossBehavior implements EnemyBehavior {
         enemy.y = next.y;
 
         // Spiral-Salven
-        spiralTimer -= dt;
+        double rate = world.getDifficulty().enemyAttackRate;
+        spiralTimer -= dt * rate;
         if (spiralTimer <= 0.0) {
             spiralTimer = (enemy.bossPhase == 2) ? 0.24 : 0.38;
             int arms = (enemy.bossPhase == 2) ? 6 : 4;
@@ -83,7 +84,7 @@ public final class BossBehavior implements EnemyBehavior {
         }
 
         // Telegraphierte Chronos-Slams
-        slamTimer -= dt;
+        slamTimer -= dt * rate;
         if (slamTimer <= 0.0) {
             slamTimer = (enemy.bossPhase == 2) ? 2.6 : 3.8;
             int zones = (enemy.bossPhase == 2) ? 3 : 1;

@@ -35,7 +35,7 @@
   etype('SKELETON_ARCHER', 44, 105, 14, 14, 22, 28, rgb(224, 218, 195), false);
   etype('BERSERKER', 88, 96, 22, 18, 30, 42, rgb(235, 88, 68), false);
   etype('NECROMANCER', 68, 84, 16, 16, 36, 55, rgb(178, 84, 255), false);
-  etype('BOSS_MALAKOR', 520, 102, 24, 28, 150, 500, rgb(255, 58, 98), true);
+  etype('BOSS_MALAKOR', 850, 102, 24, 28, 150, 500, rgb(255, 58, 98), true);
   CH.EnemyType = EnemyType;
 
   const Rarity = {
@@ -239,7 +239,7 @@
         this.xp -= this.xpToNext;
         this.level++;
         this.xpToNext = Math.round(this.xpToNext * 1.32 + 25);
-        this.maxHp += 8; this.heal(18);
+        this.maxHp += 8; this.heal(CH.Balance.LEVEL_UP_HEAL);
         this.pendingLevelUps++;
         leveled = true;
       }
@@ -284,7 +284,7 @@
 
       if (this.shieldRegenDelay > 0) this.shieldRegenDelay -= dt;
       else if (this.shield < this.maxShield) {
-        const rate = 4.5 + 3.0 * this.getUpgradeCount('AEGIS_WARD');
+        const rate = CH.Balance.SHIELD_REGEN + 3.0 * this.getUpgradeCount('AEGIS_WARD');
         this.shield = Math.min(this.maxShield, this.shield + rate * dt);
       }
 
@@ -732,7 +732,7 @@
       const map = world.getMap();
       const dist = enemy.pos().distanceTo(player.pos());
       const speed = enemy.type.baseSpeed * this.speedScale * enemy.getSpeedMultiplierFromStatus();
-      this.summonCooldown = Math.max(0, this.summonCooldown - dt);
+      this.summonCooldown = Math.max(0, this.summonCooldown - dt * world.getDifficulty().enemyAttackRate);
       let dir = Vec.ZERO;
       if (dist < 200) dir = enemy.pos().sub(player.pos()).normalize();
       else if (dist > 360 || !map.hasLineOfSight(enemy.x, enemy.y, player.x, player.y)) {
@@ -790,7 +790,8 @@
       enemy.facingAngle = player.pos().sub(enemy.pos()).angle();
       moveEnemy(enemy, world, dir.x, dir.y, speed, 0.35, dt);
 
-      this.spiralTimer -= dt;
+      const rate = world.getDifficulty().enemyAttackRate;
+      this.spiralTimer -= dt * rate;
       if (this.spiralTimer <= 0) {
         this.spiralTimer = enemy.bossPhase === 2 ? 0.24 : 0.38;
         const arms = enemy.bossPhase === 2 ? 6 : 4;
@@ -801,7 +802,7 @@
           world.spawnProjectile(new Projectile(enemy.x, enemy.y, v.x, v.y, 7, 15, false, 2.8, rgb(255, 72, 118)));
         }
       }
-      this.slamTimer -= dt;
+      this.slamTimer -= dt * rate;
       if (this.slamTimer <= 0) {
         this.slamTimer = enemy.bossPhase === 2 ? 2.6 : 3.8;
         const zones = enemy.bossPhase === 2 ? 3 : 1;
@@ -843,7 +844,7 @@
     update(dt, world) {
       if (!this.active) return;
       this.updateBaseTimers(dt, world);
-      if (this.attackCooldownTimer > 0) this.attackCooldownTimer = Math.max(0, this.attackCooldownTimer - dt);
+      if (this.attackCooldownTimer > 0) this.attackCooldownTimer = Math.max(0, this.attackCooldownTimer - dt * world.getDifficulty().enemyAttackRate);
       if (this.contactCooldown > 0) this.contactCooldown = Math.max(0, this.contactCooldown - dt);
       if (this.pathRecalcTimer > 0) this.pathRecalcTimer = Math.max(0, this.pathRecalcTimer - dt);
 

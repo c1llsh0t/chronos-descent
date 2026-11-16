@@ -24,6 +24,8 @@ public interface CombatWorld {
     Camera getCamera();
     SeededRandom getRandom();
 
+    de.chronos.core.GameConfig.Difficulty getDifficulty();
+
     void spawnProjectile(Projectile projectile);
     void spawnEnemy(Enemy enemy);
     void spawnHazardZone(HazardZone zone);

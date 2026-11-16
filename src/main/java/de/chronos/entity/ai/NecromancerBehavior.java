@@ -27,7 +27,7 @@ public final class NecromancerBehavior implements EnemyBehavior {
         Player player = world.getPlayer();
         double dist = enemy.pos().distanceTo(player.pos());
         double speed = enemy.type.baseSpeed * speedScale * enemy.getSpeedMultiplierFromStatus();
-        summonCooldown = Math.max(0.0, summonCooldown - dt);
+        summonCooldown = Math.max(0.0, summonCooldown - dt * world.getDifficulty().enemyAttackRate);
 
         Vector2D dir = Vector2D.ZERO;
         if (dist < 200.0) {

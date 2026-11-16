@@ -130,7 +130,7 @@ public final class GameSession implements CombatWorld {
     }
 
     private void populateFloorEntities() {
-        double hpScale = difficulty.enemyHealthMultiplier * (1.0 + (currentFloor - 1) * 0.35);
+        double hpScale = difficulty.enemyHealthMultiplier * (1.0 + (currentFloor - 1) * GameConfig.FLOOR_HP_SCALING);
         double spdScale = difficulty.enemySpeedMultiplier * (1.0 + (currentFloor - 1) * 0.06);
 
         for (Room room : map.getRooms()) {
@@ -149,7 +149,7 @@ public final class GameSession implements CombatWorld {
                     props.add(new InteractiveProp(c.x + 42, c.y, InteractiveProp.PropType.RELIC_ALTAR));
                 }
                 case COMBAT -> {
-                    int count = random.nextInt(3 + currentFloor, 5 + currentFloor);
+                    int count = random.nextInt(3 + currentFloor, 5 + currentFloor) + difficulty.extraEnemiesPerRoom;
                     for (int i = 0; i < count; i++) {
                         Vector2D p = findFreeSpotInRoom(room, 18.0);
                         if (p != null) {
@@ -169,7 +169,7 @@ public final class GameSession implements CombatWorld {
                     props.add(new InteractiveProp(c.x, c.y - 46, InteractiveProp.PropType.EXIT_PORTAL));
                     if (currentFloor < GameConfig.MAX_FLOORS) {
                         // Mini-Boss-Wächter-Welle auf Ebene 1 & 2
-                        int count = 3 + currentFloor;
+                        int count = 3 + currentFloor + difficulty.extraEnemiesPerRoom;
                         for (int i = 0; i < count; i++) {
                             Vector2D p = findFreeSpotInRoom(room, 18.0);
                             if (p != null) {
@@ -257,7 +257,7 @@ public final class GameSession implements CombatWorld {
             int ptx = map.worldToTile(player.x);
             int pty = map.worldToTile(player.y);
             if (map.getTile(ptx, pty) == TileType.SPIKE_TRAP) {
-                damagePlayer(12.0, 0, 0);
+                damagePlayer(GameConfig.SPIKE_DAMAGE, 0, 0);
             }
         }
 
@@ -631,7 +631,7 @@ public final class GameSession implements CombatWorld {
                         random.nextDouble(-90, 90), random.nextDouble(-90, 90)));
             }
         }
-        if (random.chance(0.14)) {
+        if (random.chance(GameConfig.POTION_DROP_CHANCE)) {
             pickups.add(new Pickup(enemy.x, enemy.y,
                     random.chance(0.65) ? Pickup.Kind.HEALTH_POTION : Pickup.Kind.SHIELD_ORB,
                     18, random.nextDouble(-50, 50), random.nextDouble(-50, 50)));
@@ -667,7 +667,9 @@ public final class GameSession implements CombatWorld {
         if (player.isInvulnerable() || runFinished) {
             return;
         }
-        player.invulnTimer = 0.42;
+        // Jeder Schaden am Spieler stammt von Gegnern oder Fallen: hier zentral skalieren
+        amount *= difficulty.enemyDamageMultiplier * (1.0 + (currentFloor - 1) * GameConfig.FLOOR_DAMAGE_SCALING);
+        player.invulnTimer = GameConfig.PLAYER_HIT_INVULN;
         player.hitFlashTimer = 0.16;
         player.shieldRegenDelay = 4.0;
         player.applyKnockback(knockX, knockY);
@@ -728,6 +730,7 @@ public final class GameSession implements CombatWorld {
     @Override public ParticleSystem getParticles() { return particles; }
     @Override public Camera getCamera() { return camera; }
     @Override public SeededRandom getRandom() { return random; }
+    @Override public GameConfig.Difficulty getDifficulty() { return difficulty; }
     @Override public void spawnProjectile(Projectile p) { pendingProjectiles.add(p); }
     @Override public void spawnEnemy(Enemy e) { pendingEnemies.add(e); }
     @Override public void spawnHazardZone(HazardZone zone) { pendingHazardZones.add(zone); }
