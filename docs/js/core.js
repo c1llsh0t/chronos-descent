@@ -12,7 +12,7 @@ const CH = window.CH = window.CH || {};
 // ---------------------------------------------------------------------------
 CH.Config = Object.freeze({
   GAME_TITLE: "CHRONOS: Aethelgard's Descent",
-  VERSION: '1.2.0-web',
+  VERSION: '1.3.0-web',
   LOGICAL_WIDTH: 1280,
   LOGICAL_HEIGHT: 720,
   TARGET_FPS: 60,
@@ -39,18 +39,18 @@ function difficulty(name, hp, speed, score, damage, attackRate, extraEnemies) {
   });
 }
 CH.Difficulty = Object.freeze({
-  NORMAL: difficulty('NORMAL', 1.5, 1.12, 1.0, 1.8, 1.35, 2),
-  HARD: difficulty('HARD', 2.0, 1.25, 1.6, 2.4, 1.6, 3),
-  NIGHTMARE: difficulty('NIGHTMARE', 2.7, 1.4, 2.5, 3.2, 1.9, 4),
+  NORMAL: difficulty('NORMAL', 1.9, 1.18, 1.0, 2.3, 1.55, 3),
+  HARD: difficulty('HARD', 2.5, 1.32, 1.8, 3.0, 1.8, 4),
+  NIGHTMARE: difficulty('NIGHTMARE', 3.3, 1.48, 2.8, 4.0, 2.1, 5),
 });
 CH.Balance = Object.freeze({
-  FLOOR_HP_SCALING: 0.55,       // +55% Gegner-Leben pro Ebene
-  FLOOR_DAMAGE_SCALING: 0.30,   // +30% Gegner-Schaden pro Ebene
-  PLAYER_HIT_INVULN: 0.30,
-  LEVEL_UP_HEAL: 5,
-  SHIELD_REGEN: 2.0,
-  SPIKE_DAMAGE: 20,
-  POTION_DROP_CHANCE: 0.07,
+  FLOOR_HP_SCALING: 0.65,       // +65% Gegner-Leben pro Ebene
+  FLOOR_DAMAGE_SCALING: 0.40,   // +40% Gegner-Schaden pro Ebene
+  PLAYER_HIT_INVULN: 0.25,
+  LEVEL_UP_HEAL: 0,
+  SHIELD_REGEN: 1.5,
+  SPIKE_DAMAGE: 25,
+  POTION_DROP_CHANCE: 0.05,
 });
 CH.DIFFICULTIES = [CH.Difficulty.NORMAL, CH.Difficulty.HARD, CH.Difficulty.NIGHTMARE];
 

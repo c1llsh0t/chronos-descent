@@ -35,7 +35,7 @@
   etype('SKELETON_ARCHER', 44, 105, 14, 14, 22, 28, rgb(224, 218, 195), false);
   etype('BERSERKER', 88, 96, 22, 18, 30, 42, rgb(235, 88, 68), false);
   etype('NECROMANCER', 68, 84, 16, 16, 36, 55, rgb(178, 84, 255), false);
-  etype('BOSS_MALAKOR', 1100, 102, 24, 28, 150, 500, rgb(255, 58, 98), true);
+  etype('BOSS_MALAKOR', 1400, 102, 24, 28, 150, 500, rgb(255, 58, 98), true);
   CH.EnemyType = EnemyType;
 
   const Rarity = {

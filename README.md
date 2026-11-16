@@ -234,6 +234,18 @@ src/
 
 ---
 
+## Änderungen in Version 1.3.0 – brutal
+
+| | Leben | Tempo | Schaden | Angriffstempo | Zusatzgegner/Raum | Punkte |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| Normal | ×1.9 | ×1.18 | ×2.3 | ×1.55 | +3 | ×1.0 |
+| Schwer | ×2.5 | ×1.32 | ×3.0 | ×1.8 | +4 | ×1.8 |
+| Alptraum | ×3.3 | ×1.48 | ×4.0 | ×2.1 | +5 | ×2.8 |
+
+- Pro Ebene +65 % Gegner-Leben und +40 % Gegner-Schaden
+- Malakor: 1400 Grund-Leben
+- Unverwundbarkeit nach Treffer 0,25 s, **keine Heilung mehr beim Stufenaufstieg**, Schild-Regeneration 1,5/s, Heiltrank-Chance 5 %, Stachelfallen 25 Schaden
+
 ## Änderungen in Version 1.2.0 – noch schwerer
 
 | | Leben | Tempo | Schaden | Angriffstempo | Zusatzgegner/Raum | Punkte |
