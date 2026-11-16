@@ -11,7 +11,7 @@ public enum EnemyType {
     SKELETON_ARCHER(44, 105, 14, 14, 22, 28, new Color(224, 218, 195), false),
     BERSERKER(88, 96, 22, 18, 30, 42, new Color(235, 88, 68), false),
     NECROMANCER(68, 84, 16, 16, 36, 55, new Color(178, 84, 255), false),
-    BOSS_MALAKOR(850, 102, 24, 28, 150, 500, new Color(255, 58, 98), true);
+    BOSS_MALAKOR(1100, 102, 24, 28, 150, 500, new Color(255, 58, 98), true);
 
     public final double baseHp;
     public final double baseSpeed;

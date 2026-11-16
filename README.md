@@ -234,6 +234,18 @@ src/
 
 ---
 
+## Änderungen in Version 1.2.0 – noch schwerer
+
+| | Leben | Tempo | Schaden | Angriffstempo | Zusatzgegner/Raum | Punkte |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| Normal | ×1.5 | ×1.12 | ×1.8 | ×1.35 | +2 | ×1.0 |
+| Schwer | ×2.0 | ×1.25 | ×2.4 | ×1.6 | +3 | ×1.6 |
+| Alptraum | ×2.7 | ×1.4 | ×3.2 | ×1.9 | +4 | ×2.5 |
+
+- Pro Ebene +55 % Gegner-Leben und +30 % Gegner-Schaden
+- Malakor: 1100 Grund-Leben
+- Unverwundbarkeit nach Treffer 0,30 s, Heilung beim Stufenaufstieg 5 HP, Schild-Regeneration 2/s, Heiltrank-Chance 7 %, Stachelfallen 20 Schaden
+
 ## Änderungen in Version 1.1.0 – deutlich schwerer
 
 - **Gegner sind gefährlicher:** Die Schwierigkeit erhöht jetzt auch Gegner-Schaden, Angriffstempo und die Anzahl Gegner pro Raum (vorher nur Leben & Tempo)

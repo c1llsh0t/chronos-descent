@@ -8,7 +8,7 @@ public final class GameConfig {
     }
 
     public static final String GAME_TITLE = "CHRONOS: Aethelgard's Descent";
-    public static final String VERSION = "1.1.0";
+    public static final String VERSION = "1.2.0";
 
     // Logische Rendering-Auflösung (skaliert verlustfrei auf jede Fenstergröße)
     public static final int LOGICAL_WIDTH = 1280;
@@ -35,19 +35,19 @@ public final class GameConfig {
     public static final double COMBO_DECAY_SECONDS = 4.5;
 
     // Balancing: Spieler & Ebenen
-    public static final double FLOOR_HP_SCALING = 0.45;      // +45% Gegner-Leben pro Ebene
-    public static final double FLOOR_DAMAGE_SCALING = 0.20;  // +20% Gegner-Schaden pro Ebene
-    public static final double PLAYER_HIT_INVULN = 0.35;
-    public static final double LEVEL_UP_HEAL = 10.0;
-    public static final double SHIELD_REGEN = 3.0;
-    public static final double SPIKE_DAMAGE = 16.0;
-    public static final double POTION_DROP_CHANCE = 0.10;
+    public static final double FLOOR_HP_SCALING = 0.55;      // +55% Gegner-Leben pro Ebene
+    public static final double FLOOR_DAMAGE_SCALING = 0.30;  // +30% Gegner-Schaden pro Ebene
+    public static final double PLAYER_HIT_INVULN = 0.30;
+    public static final double LEVEL_UP_HEAL = 5.0;
+    public static final double SHIELD_REGEN = 2.0;
+    public static final double SPIKE_DAMAGE = 20.0;
+    public static final double POTION_DROP_CHANCE = 0.07;
 
     // Schwierigkeitsgrade: Leben, Tempo, Punkte, Gegner-Schaden, Angriffstempo, Zusatzgegner pro Raum
     public enum Difficulty {
-        NORMAL(1.25, 1.08, 1.0, 1.4, 1.2, 1),
-        HARD(1.7, 1.2, 1.5, 1.9, 1.4, 2),
-        NIGHTMARE(2.2, 1.32, 2.2, 2.5, 1.65, 3);
+        NORMAL(1.5, 1.12, 1.0, 1.8, 1.35, 2),
+        HARD(2.0, 1.25, 1.6, 2.4, 1.6, 3),
+        NIGHTMARE(2.7, 1.4, 2.5, 3.2, 1.9, 4);
 
         public final double enemyHealthMultiplier;
         public final double enemySpeedMultiplier;
