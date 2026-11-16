@@ -128,6 +128,13 @@
       this.trapTimer = 0; this.runDurationSeconds = 0; this.totalKills = 0; this.totalDamageDealt = 0;
       this.chestsOpened = 0; this.portalUnlocked = false; this.runFinished = false; this.victory = false;
       this.pendingAltarUpgrade = false;
+      // Zähler für die Gesamtstatistik (wird am Run-Ende bzw. beim Abbruch gespeichert)
+      this.stats = {
+        killsByType: {}, bossKills: 0, damageTaken: 0, goldCollected: 0, shrinesUsed: 0, altarsUsed: 0,
+        levelUps: 0, potions: 0, shieldOrbs: 0, upgradesChosen: 0, attacks: 0, crits: 0, dashes: 0,
+        skillsQ: 0, skillsE: 0, portalsUsed: 0, hitsTaken: 0,
+      };
+      this.statsCommitted = false;
       this.loadFloor(1);
     }
 
@@ -363,6 +370,7 @@
       switch (pk.kind) {
         case 'XP_GEM':
           if (p.addXp(pk.value)) {
+            this.stats.levelUps++;
             this.particles.spawnShockwave(p.x, p.y, 130, 0.45, rgb(255, 225, 95));
             this.addFloatingText(new FloatingText(p.x, p.y - 30, 'LEVEL UP!', rgb(255, 230, 100), 18, 1.2));
             this.eventBus.publish('LevelUp', { level: p.level });
@@ -370,15 +378,18 @@
           }
           break;
         case 'GOLD_COIN':
+          this.stats.goldCollected += pk.value;
           p.gold += pk.value;
           p.score += pk.value * 2;
           this.addFloatingText(new FloatingText(pk.x, pk.y - 10, '+' + pk.value + 'g', rgb(255, 215, 65), 13, 0.7));
           break;
         case 'HEALTH_POTION':
+          this.stats.potions++;
           p.heal(pk.value);
           this.addFloatingText(new FloatingText(p.x, p.y - 22, '+' + pk.value + ' HP', rgb(95, 240, 130), 14, 0.8));
           break;
         case 'SHIELD_ORB':
+          this.stats.shieldOrbs++;
           p.shield = Math.min(p.maxShield + 20, p.shield + pk.value);
           this.addFloatingText(new FloatingText(p.x, p.y - 22, '+' + pk.value + ' SHD', rgb(100, 210, 255), 14, 0.8));
           break;
@@ -409,7 +420,7 @@
         case 'HEALING_SHRINE':
           if (!n.used && p.gold < 25) this.showNotEnoughGold(n, 25);
           else if (!n.used) {
-            n.used = true; p.gold -= 25; p.heal(45);
+            n.used = true; p.gold -= 25; p.heal(45); this.stats.shrinesUsed++;
             this.particles.spawnShockwave(n.x, n.y, 90, 0.4, rgb(90, 255, 150));
             this.addFloatingText(new FloatingText(p.x, p.y - 26, '+45 HP', rgb(90, 255, 150), 16, 1.0));
             this.eventBus.publish('UiClick', {});
@@ -418,12 +429,13 @@
         case 'RELIC_ALTAR':
           if (!n.used && p.gold < 40) this.showNotEnoughGold(n, 40);
           else if (!n.used) {
-            n.used = true; p.gold -= 40; this.pendingAltarUpgrade = true;
+            n.used = true; p.gold -= 40; this.pendingAltarUpgrade = true; this.stats.altarsUsed++;
             this.eventBus.publish('UiClick', {});
           }
           break;
         case 'EXIT_PORTAL':
           if (this.portalUnlocked) {
+            this.stats.portalsUsed++;
             if (this.currentFloor < Config.MAX_FLOORS) this.loadFloor(this.currentFloor + 1);
             else this.endRun(true);
           } else {
@@ -460,6 +472,7 @@
       }
       const finalScore = Math.round(p.score * this.difficulty.scoreMultiplier);
       p.score = finalScore;
+      this.commitStats(isVictory ? 'WIN' : 'DEATH');
       this.saveManager.recordRun(finalScore, p.heroClass.id, this.difficulty.name, this.currentFloor, this.totalKills,
         this.runDurationSeconds, isVictory, this.seed);
       this.eventBus.publish('RunEnded', { victory: isVictory, score: finalScore });
@@ -485,6 +498,8 @@
       const p = this.player;
       e.active = false;
       this.totalKills++;
+      this.stats.killsByType[e.type.id] = (this.stats.killsByType[e.type.id] || 0) + 1;
+      if (e.type.isBoss) this.stats.bossKills++;
       p.combo++;
       p.maxCombo = Math.max(p.maxCombo, p.combo);
       p.comboTimer = Config.COMBO_DECAY_SECONDS;
@@ -536,6 +551,8 @@
         const abs = Math.min(p.shield, rem);
         p.shield -= abs; rem -= abs;
       }
+      this.stats.damageTaken += amount;
+      this.stats.hitsTaken++;
       if (rem > 0) p.hp = Math.max(0, p.hp - rem);
       this.floatingTexts.push(new FloatingText(p.x, p.y - 22, '-' + Math.ceil(amount), rgb(255, 85, 85), 15, 0.75));
       this.particles.spawnBurst(p.x, p.y, 10, 50, 180, 4, 0.3, rgb(255, 80, 80), true);
@@ -558,6 +575,7 @@
     }
 
     applyChosenUpgrade(u) {
+      this.stats.upgradesChosen++;
       this.player.applyUpgrade(u);
       this.particles.spawnShockwave(this.player.x, this.player.y, 110, 0.38, u.rarity.color);
       this.addFloatingText(new FloatingText(this.player.x, this.player.y - 28, u.name(), u.rarity.color, 15, 1.1));
@@ -576,7 +594,19 @@
     spawnEnemy(e) { this.pendingEnemies.push(e); }
     spawnHazardZone(z) { this.pendingHazardZones.push(z); }
     addFloatingText(t) { this.floatingTexts.push(t); }
-    publishEvent(type, data) { this.eventBus.publish(type, data); }
+    publishEvent(type, data) {
+      if (type === 'DashPerformed') this.stats.dashes++;
+      else if (type === 'AttackPerformed') { this.stats.attacks++; if (data && data.critical) this.stats.crits++; }
+      else if (type === 'SkillCast') { if (data && data.slot === 1) this.stats.skillsQ++; else this.stats.skillsE++; }
+      this.eventBus.publish(type, data);
+    }
+
+    /** Überträgt diesen Run einmalig in die Gesamtstatistik (Sieg, Niederlage oder Abbruch). */
+    commitStats(outcome) {
+      if (this.statsCommitted) return;
+      this.statsCommitted = true;
+      this.saveManager.addRunStats(this, outcome);
+    }
   }
   CH.GameSession = GameSession;
 })();

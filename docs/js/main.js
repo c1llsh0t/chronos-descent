@@ -133,6 +133,11 @@
   }
   requestAnimationFrame(frame);
 
+  // Laufenden Run beim Schliessen des Tabs als abgebrochen in die Statistik übernehmen
+  window.addEventListener('pagehide', () => {
+    for (const st of sm.stack) if (st instanceof CH.PlayingState && !st.session.runFinished) st.session.commitStats('ABANDON');
+  });
+
   const loader = document.getElementById('loading');
   if (loader) loader.remove();
 })();

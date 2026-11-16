@@ -234,6 +234,13 @@ src/
 
 ---
 
+## Neu in der Web-Version: Statistik
+
+Im Hauptmenü unter **Statistik** steht in Tabellen alles, was du über alle Runs hinweg gemacht und geschafft hast:
+Runs, Siege, Niederlagen, Siegquote, Spielzeit, Erfolge · Rekorde (Punkte, Stufe, Ebene, Kombo, schnellster Sieg) ·
+Kampfwerte (Kills, Schaden, Treffer, Angriffe, Krits, Dashes, Fähigkeiten) · Beute (Gold, Truhen, Schreine, Relikte, Tränke) ·
+besiegte Gegner pro Typ · Werte pro Heldenklasse und pro Schwierigkeitsgrad. Gespeichert wird im Browser.
+
 ## Änderungen in Version 1.3.0 – brutal
 
 | | Leben | Tempo | Schaden | Angriffstempo | Zusatzgegner/Raum | Punkte |

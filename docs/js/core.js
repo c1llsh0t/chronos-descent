@@ -226,6 +226,58 @@ reg('menu.start', 'Abenteuer starten', 'Start Descent');
 reg('menu.highscores', 'Bestenliste & Erfolge', 'Highscores & Achievements');
 reg('menu.help', 'Steuerung & Technik', 'Controls & Tech Info');
 reg('menu.fullscreen', 'Vollbild', 'Fullscreen');
+reg('menu.stats', 'Statistik', 'Statistics');
+reg('stats.title', 'DEINE STATISTIK', 'YOUR STATISTICS');
+reg('stats.overview', 'Überblick', 'Overview');
+reg('stats.combat', 'Kampf', 'Combat');
+reg('stats.loot', 'Beute & Fortschritt', 'Loot & Progress');
+reg('stats.enemies', 'Besiegte Gegner', 'Enemies Defeated');
+reg('stats.classes', 'Heldenklassen', 'Hero Classes');
+reg('stats.difficulties', 'Schwierigkeitsgrade', 'Difficulties');
+reg('stats.records', 'Rekorde', 'Records');
+reg('stats.runs', 'Runs gespielt', 'Runs played');
+reg('stats.wins', 'Siege', 'Victories');
+reg('stats.deaths', 'Niederlagen', 'Defeats');
+reg('stats.abandoned', 'Abgebrochen', 'Abandoned');
+reg('stats.winrate', 'Siegquote', 'Win rate');
+reg('stats.playtime', 'Spielzeit', 'Play time');
+reg('stats.kills', 'Gegner besiegt', 'Enemies slain');
+reg('stats.bosskills', 'Malakor besiegt', 'Malakor defeated');
+reg('stats.dmg_dealt', 'Schaden verursacht', 'Damage dealt');
+reg('stats.dmg_taken', 'Schaden erlitten', 'Damage taken');
+reg('stats.hits_taken', 'Treffer kassiert', 'Hits taken');
+reg('stats.attacks', 'Angriffe', 'Attacks');
+reg('stats.crits', 'Kritische Treffer', 'Critical hits');
+reg('stats.dashes', 'Dashes', 'Dashes');
+reg('stats.skills', 'Fähigkeiten [Q] / [E]', 'Skills [Q] / [E]');
+reg('stats.gold', 'Gold gesammelt', 'Gold collected');
+reg('stats.chests', 'Truhen geöffnet', 'Chests opened');
+reg('stats.shrines', 'Schreine / Altäre', 'Shrines / Altars');
+reg('stats.levelups', 'Stufenaufstiege', 'Level-ups');
+reg('stats.upgrades', 'Relikte gewählt', 'Relics chosen');
+reg('stats.potions', 'Tränke / Schild-Orbs', 'Potions / Shield orbs');
+reg('stats.portals', 'Portale betreten', 'Portals entered');
+reg('stats.best_score', 'Höchste Punktzahl', 'Best score');
+reg('stats.best_level', 'Höchste Stufe', 'Highest level');
+reg('stats.best_floor', 'Tiefste Ebene', 'Deepest floor');
+reg('stats.best_combo', 'Höchste Kombo', 'Best combo');
+reg('stats.fastest', 'Schnellster Sieg', 'Fastest win');
+reg('stats.achievements', 'Erfolge', 'Achievements');
+reg('stats.col_class', 'Klasse', 'Class');
+reg('stats.col_diff', 'Stufe', 'Difficulty');
+reg('stats.col_enemy', 'Gegner', 'Enemy');
+reg('stats.col_runs', 'Runs', 'Runs');
+reg('stats.col_wins', 'Siege', 'Wins');
+reg('stats.col_best', 'Bestwert', 'Best');
+reg('stats.col_floor', 'Ebene', 'Floor');
+reg('stats.col_kills', 'Kills', 'Kills');
+reg('stats.empty', 'Spiele deinen ersten Run – hier erscheint dann alles, was du geschafft hast.', 'Play your first run – everything you achieve will show up here.');
+reg('enemy.SLIME', 'Schleim', 'Slime');
+reg('enemy.ELDER_SLIME', 'Älterer Schleim', 'Elder Slime');
+reg('enemy.SKELETON_ARCHER', 'Skelett-Schütze', 'Skeleton Archer');
+reg('enemy.BERSERKER', 'Berserker', 'Berserker');
+reg('enemy.NECROMANCER', 'Nekromant', 'Necromancer');
+reg('enemy.BOSS_MALAKOR', 'Malakor', 'Malakor');
 reg('menu.select_class', 'Heldenklasse wählen', 'Choose Hero Class');
 reg('menu.difficulty', 'Schwierigkeit', 'Difficulty');
 reg('menu.seed', 'Dungeon-Seed (leer = zufällig)', 'Dungeon Seed (blank = random)');
@@ -424,6 +476,7 @@ class SaveManager {
     this.achievements = new Set();
     this.language = 'DE';
     this.muted = false;
+    this.stats = SaveManager.emptyStats();
     this.load();
   }
 
@@ -440,6 +493,7 @@ class SaveManager {
       this.language = d.language === 'EN' ? 'EN' : 'DE';
       this.muted = !!d.muted;
       this.achievements = new Set(Array.isArray(d.achievements) ? d.achievements : []);
+      this.stats = Object.assign(SaveManager.emptyStats(), d.stats || {});
       this.highscores = Array.isArray(d.highscores) ? d.highscores.filter(h => h && typeof h.score === 'number') : [];
       this.sortAndTrim();
     } catch (e) {
@@ -454,8 +508,50 @@ class SaveManager {
         muted: this.muted,
         achievements: [...this.achievements],
         highscores: this.highscores,
+        stats: this.stats,
       }));
     } catch (e) { /* ignorieren */ }
+  }
+
+  static emptyStats() {
+    return {
+      runs: 0, wins: 0, deaths: 0, abandoned: 0, playTime: 0, kills: 0, killsByType: {}, bossKills: 0,
+      damageDealt: 0, damageTaken: 0, hitsTaken: 0, goldCollected: 0, chestsOpened: 0, shrinesUsed: 0, altarsUsed: 0,
+      levelUps: 0, upgradesChosen: 0, potions: 0, shieldOrbs: 0, attacks: 0, crits: 0, dashes: 0, skillsQ: 0, skillsE: 0,
+      portalsUsed: 0, bestScore: 0, highestLevel: 0, highestFloor: 0, maxCombo: 0, fastestWin: 0,
+      perClass: {}, perDifficulty: {},
+    };
+  }
+
+  /** Fügt einen beendeten oder abgebrochenen Run zur Gesamtstatistik hinzu. */
+  addRunStats(session, outcome) {
+    const st = this.stats, rs = session.stats, p = session.player;
+    const win = outcome === 'WIN';
+    st.runs++;
+    if (win) st.wins++; else if (outcome === 'DEATH') st.deaths++; else st.abandoned++;
+    st.playTime += session.runDurationSeconds;
+    st.kills += session.totalKills;
+    for (const [k, v] of Object.entries(rs.killsByType)) st.killsByType[k] = (st.killsByType[k] || 0) + v;
+    st.bossKills += rs.bossKills;
+    st.damageDealt += session.totalDamageDealt;
+    for (const k of ['damageTaken', 'hitsTaken', 'goldCollected', 'shrinesUsed', 'altarsUsed', 'levelUps', 'upgradesChosen',
+      'potions', 'shieldOrbs', 'attacks', 'crits', 'dashes', 'skillsQ', 'skillsE', 'portalsUsed']) st[k] += rs[k];
+    st.chestsOpened += session.chestsOpened;
+    const score = win || outcome === 'DEATH' ? p.score : 0;
+    st.bestScore = Math.max(st.bestScore, score);
+    st.highestLevel = Math.max(st.highestLevel, p.level);
+    st.highestFloor = Math.max(st.highestFloor, session.currentFloor);
+    st.maxCombo = Math.max(st.maxCombo, p.maxCombo);
+    if (win && (st.fastestWin === 0 || session.runDurationSeconds < st.fastestWin)) st.fastestWin = session.runDurationSeconds;
+    const pc = st.perClass[p.heroClass.id] || (st.perClass[p.heroClass.id] = { runs: 0, wins: 0, bestScore: 0, bestFloor: 0, kills: 0 });
+    pc.runs++; if (win) pc.wins++;
+    pc.bestScore = Math.max(pc.bestScore, score);
+    pc.bestFloor = Math.max(pc.bestFloor, session.currentFloor);
+    pc.kills += session.totalKills;
+    const pd = st.perDifficulty[session.difficulty.name] || (st.perDifficulty[session.difficulty.name] = { runs: 0, wins: 0, bestScore: 0 });
+    pd.runs++; if (win) pd.wins++;
+    pd.bestScore = Math.max(pd.bestScore, score);
+    this.save();
   }
 
   recordRun(score, heroClass, difficulty, floorReached, kills, durationSeconds, victory, seed) {

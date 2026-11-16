@@ -92,10 +92,11 @@
       this.diffButtons = [rect(120, 425, 160, 40), rect(292, 425, 160, 40), rect(464, 425, 160, 40)];
       this.seedBox = rect(690, 425, 470, 40);
       this.startBtn = rect(460, 505, 360, 50);
-      this.highscoreBtn = rect(240, 575, 250, 42);
-      this.helpBtn = rect(515, 575, 250, 42);
-      this.langBtn = rect(790, 575, 140, 42);
-      this.fullscreenBtn = rect(945, 575, 120, 42);
+      this.highscoreBtn = rect(130, 575, 240, 42);
+      this.statsBtn = rect(382, 575, 170, 42);
+      this.helpBtn = rect(564, 575, 230, 42);
+      this.langBtn = rect(806, 575, 170, 42);
+      this.fullscreenBtn = rect(988, 575, 162, 42);
     }
     click() { this.ctx.eventBus.publish('UiClick'); }
 
@@ -126,6 +127,7 @@
 
       if (U.isClicked(this.startBtn, input) || input.wasKeyPressed('Enter')) this.startNewRun();
       else if (U.isClicked(this.highscoreBtn, input)) { this.click(); this.sm.push(new HighscoreState(this.sm, this.ctx)); }
+      else if (U.isClicked(this.statsBtn, input)) { this.click(); this.sm.push(new StatsState(this.sm, this.ctx)); }
       else if (U.isClicked(this.helpBtn, input)) { this.click(); this.sm.push(new HelpState(this.sm, this.ctx)); }
       else if (U.isClicked(this.langBtn, input)) this.toggleLanguage();
       else if (U.isClicked(this.fullscreenBtn, input)) { this.click(); this.ctx.toggleFullscreen(); }
@@ -180,6 +182,7 @@
 
       U.drawButton(g, this.startBtn, I().t('menu.start'), U.isHovered(this.startBtn, input), this.selectedClass.accentColor);
       U.drawButton(g, this.highscoreBtn, I().t('menu.highscores'), U.isHovered(this.highscoreBtn, input), rgb(255, 206, 78));
+      U.drawButton(g, this.statsBtn, I().t('menu.stats'), U.isHovered(this.statsBtn, input), rgb(255, 150, 90));
       U.drawButton(g, this.helpBtn, I().t('menu.help'), U.isHovered(this.helpBtn, input), rgb(120, 210, 255));
       U.drawButton(g, this.langBtn, I().t('menu.language'), U.isHovered(this.langBtn, input), rgb(145, 235, 180));
       U.drawButton(g, this.fullscreenBtn, I().t('menu.fullscreen'), U.isHovered(this.fullscreenBtn, input), rgb(255, 105, 115));
@@ -254,6 +257,7 @@
   CH.PlayingState = PlayingState;
 
   function freshRun(sm, ctx, old) {
+    old.commitStats(old.runFinished ? (old.victory ? 'WIN' : 'DEATH') : 'ABANDON');
     const s = new CH.GameSession(old.player.heroClass, old.difficulty, CH.SeededRandom.parseSeed(''), ctx.eventBus, ctx.saveManager);
     sm.replaceAll(new MenuState(sm, ctx));
     sm.push(new PlayingState(sm, ctx, s));
@@ -273,7 +277,9 @@
       } else if (U.isClicked(this.restartBtn, input)) {
         this.ctx.eventBus.publish('UiClick'); freshRun(this.sm, this.ctx, this.session);
       } else if (U.isClicked(this.menuBtn, input)) {
-        this.ctx.eventBus.publish('UiClick'); this.sm.replaceAll(new MenuState(this.sm, this.ctx));
+        this.ctx.eventBus.publish('UiClick');
+        this.session.commitStats('ABANDON');
+        this.sm.replaceAll(new MenuState(this.sm, this.ctx));
       }
     }
     render(g, input) {
@@ -429,6 +435,128 @@
       U.drawButton(g, this.backBtn, I().t('hs.back'), U.isHovered(this.backBtn, input), rgb(115, 215, 255));
     }
   }
+
+  // -------------------------------------------------------------------------
+  // Gesamtstatistik: alles, was man über alle Runs gemacht und geschafft hat
+  // -------------------------------------------------------------------------
+  class StatsState {
+    constructor(sm, ctx) { this.sm = sm; this.ctx = ctx; this.backBtn = rect(510, 652, 260, 44); }
+    update(dt, input) {
+      if (input.wasKeyPressed('Escape') || U.isClicked(this.backBtn, input)) { this.ctx.eventBus.publish('UiClick'); this.sm.pop(); }
+    }
+    num(v) { return Math.round(v).toLocaleString(I().isDe() ? 'de-CH' : 'en-US'); }
+    duration(sec) {
+      sec = Math.round(sec);
+      const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+      return h > 0 ? `${h} h ${CH.pad2(m)} min` : `${CH.pad2(m)}:${CH.pad2(s)}`;
+    }
+    panelFrame(g, x, y, w, h, title) {
+      g.setColor(rgb(18, 22, 36, 230)); g.fillRoundRect(x, y, w, h, 12);
+      g.setColor(rgb(80, 102, 148)); g.setStroke(1); g.drawRoundRect(x, y, w, h, 12);
+      g.setFont(15, true); g.setColor(rgb(255, 214, 92)); g.drawString(title, x + 16, y + 25);
+    }
+    /** Zweispaltige Tabelle: Bezeichnung | Wert */
+    keyValues(g, x, y, w, title, rows) {
+      const h = 40 + rows.length * 22;
+      this.panelFrame(g, x, y, w, h, title);
+      rows.forEach(([label, value, col], i) => {
+        const ry = y + 50 + i * 22;
+        if (i % 2 === 0) { g.setColor(rgb(255, 255, 255, 8)); g.fillRect(x + 8, ry - 15, w - 16, 22); }
+        g.setFont(13, false); g.setColor(rgb(180, 195, 220)); g.drawString(label, x + 16, ry);
+        g.setFont(13, true); g.setColor(col || Color.WHITE); g.drawString(value, x + w - 16 - g.stringWidth(value), ry);
+      });
+      return y + h;
+    }
+    /** Tabelle mit Kopfzeile und rechtsbündigen Zahlenspalten */
+    table(g, x, y, w, title, headers, colRight, rows) {
+      const h = 40 + 22 + rows.length * 22;
+      this.panelFrame(g, x, y, w, h, title);
+      const col = (j) => (j === 0 ? x + 16 : x + colRight[j - 1]);
+      g.setFont(12, true); g.setColor(rgb(145, 200, 255));
+      headers.forEach((t, j) => g.drawString(t, j === 0 ? col(0) : col(j) - g.stringWidth(t), y + 50));
+      g.setColor(rgb(80, 102, 148)); g.drawLine(x + 12, y + 56, x + w - 12, y + 56);
+      rows.forEach((r, i) => {
+        const ry = y + 74 + i * 22;
+        if (i % 2 === 0) { g.setColor(rgb(255, 255, 255, 8)); g.fillRect(x + 8, ry - 15, w - 16, 22); }
+        r.cells.forEach((t, j) => {
+          g.setFont(13, j === 0); g.setColor(j === 0 ? (r.color || Color.WHITE) : rgb(220, 228, 245));
+          g.drawString(t, j === 0 ? col(0) : col(j) - g.stringWidth(t), ry);
+        });
+      });
+      return y + h;
+    }
+    render(g, input) {
+      bgGradient(g, rgb(11, 13, 24), rgb(18, 16, 32));
+      U.drawCentered(g, I().t('stats.title'), W / 2, 48, 28, true, rgb(255, 150, 90));
+      const st = this.ctx.saveManager.stats, save = this.ctx.saveManager;
+      const pct = (a, b) => (b > 0 ? Math.round(a / b * 100) + ' %' : '–');
+      const dash = (v, f) => (v > 0 ? f(v) : '–');
+      if (st.runs === 0) U.drawCentered(g, I().t('stats.empty'), W / 2, 74, 13, false, rgb(155, 168, 195));
+
+      const top = 84, colW = 390;
+      const x1 = 40, x2 = 445, x3 = 850;
+
+      // Spalte 1: Überblick & Rekorde
+      let y = this.keyValues(g, x1, top, colW, I().t('stats.overview'), [
+        [I().t('stats.runs'), this.num(st.runs)],
+        [I().t('stats.wins'), this.num(st.wins), rgb(255, 218, 88)],
+        [I().t('stats.deaths'), this.num(st.deaths), rgb(255, 110, 120)],
+        [I().t('stats.abandoned'), this.num(st.abandoned)],
+        [I().t('stats.winrate'), pct(st.wins, st.wins + st.deaths)],
+        [I().t('stats.playtime'), this.duration(st.playTime)],
+        [I().t('stats.achievements'), `${save.achievements.size} / ${CH.ACHIEVEMENTS.length}`, rgb(255, 205, 72)],
+      ]);
+      this.keyValues(g, x1, y + 14, colW, I().t('stats.records'), [
+        [I().t('stats.best_score'), dash(st.bestScore, v => this.num(v)), rgb(255, 220, 95)],
+        [I().t('stats.best_level'), dash(st.highestLevel, String)],
+        [I().t('stats.best_floor'), dash(st.highestFloor, v => `${v} / ${Config.MAX_FLOORS}`)],
+        [I().t('stats.best_combo'), dash(st.maxCombo, v => v + 'x'), rgb(255, 155, 80)],
+        [I().t('stats.fastest'), dash(st.fastestWin, v => CH.formatTime(v)), rgb(135, 215, 255)],
+      ]);
+
+      // Spalte 2: Kampf & Beute
+      y = this.keyValues(g, x2, top, colW, I().t('stats.combat'), [
+        [I().t('stats.kills'), this.num(st.kills)],
+        [I().t('stats.bosskills'), this.num(st.bossKills), rgb(255, 90, 120)],
+        [I().t('stats.dmg_dealt'), this.num(st.damageDealt)],
+        [I().t('stats.dmg_taken'), this.num(st.damageTaken), rgb(255, 120, 120)],
+        [I().t('stats.hits_taken'), this.num(st.hitsTaken)],
+        [I().t('stats.attacks'), this.num(st.attacks)],
+        [I().t('stats.crits'), `${this.num(st.crits)} (${pct(st.crits, st.attacks)})`, rgb(255, 224, 96)],
+        [I().t('stats.dashes'), this.num(st.dashes)],
+        [I().t('stats.skills'), `${this.num(st.skillsQ)} / ${this.num(st.skillsE)}`],
+      ]);
+      this.keyValues(g, x2, y + 14, colW, I().t('stats.loot'), [
+        [I().t('stats.gold'), this.num(st.goldCollected), rgb(255, 212, 70)],
+        [I().t('stats.chests'), this.num(st.chestsOpened)],
+        [I().t('stats.shrines'), `${this.num(st.shrinesUsed)} / ${this.num(st.altarsUsed)}`],
+        [I().t('stats.levelups'), this.num(st.levelUps)],
+        [I().t('stats.upgrades'), this.num(st.upgradesChosen)],
+        [I().t('stats.potions'), `${this.num(st.potions)} / ${this.num(st.shieldOrbs)}`],
+        [I().t('stats.portals'), this.num(st.portalsUsed)],
+      ]);
+
+      // Spalte 3: Gegner, Klassen, Schwierigkeit
+      const enemyIds = ['SLIME', 'ELDER_SLIME', 'SKELETON_ARCHER', 'BERSERKER', 'NECROMANCER', 'BOSS_MALAKOR'];
+      y = this.table(g, x3, top, colW, I().t('stats.enemies'), [I().t('stats.col_enemy'), I().t('stats.col_kills')], [colW - 16],
+        enemyIds.map(id => ({ cells: [I().t('enemy.' + id), this.num(st.killsByType[id] || 0)], color: CH.EnemyType[id].color })));
+      y = this.table(g, x3, y + 14, colW, I().t('stats.classes'),
+        [I().t('stats.col_class'), I().t('stats.col_runs'), I().t('stats.col_wins'), I().t('stats.col_best'), I().t('stats.col_floor')], [190, 245, 320, colW - 16],
+        CH.HERO_CLASSES.map(hc => {
+          const c = st.perClass[hc.id] || { runs: 0, wins: 0, bestScore: 0, bestFloor: 0 };
+          return { cells: [hc.displayName(), this.num(c.runs), this.num(c.wins), dash(c.bestScore, v => this.num(v)), dash(c.bestFloor, String)], color: hc.accentColor };
+        }));
+      this.table(g, x3, y + 14, colW, I().t('stats.difficulties'),
+        [I().t('stats.col_diff'), I().t('stats.col_runs'), I().t('stats.col_wins'), I().t('stats.col_best')], [190, 260, colW - 16],
+        CH.DIFFICULTIES.map(d => {
+          const c = st.perDifficulty[d.name] || { runs: 0, wins: 0, bestScore: 0 };
+          return { cells: [I().t('diff.' + d.name), this.num(c.runs), this.num(c.wins), dash(c.bestScore, v => this.num(v))] };
+        }));
+
+      U.drawButton(g, this.backBtn, I().t('hs.back'), U.isHovered(this.backBtn, input), rgb(255, 150, 90));
+    }
+  }
+  CH.StatsState = StatsState;
 
   // -------------------------------------------------------------------------
   const HELP = {
