@@ -6,6 +6,16 @@ Ein vollständiger, prozeduraler **Action-Roguelite Dungeon Crawler** in reinem 
 > **Entwickelt durch:** K Mujkanovic  
 > **Veröffentlicht durch:** c1llsh0t
 
+
+## ▶ Im Browser spielen
+
+**https://c1llsh0t.github.io/chronos-descent/**
+
+Die Web-Version läuft direkt im Browser – ohne Java, ohne Installation (Tastatur & Maus empfohlen).
+Sie ist eine vollständige JavaScript/HTML5-Canvas-Portierung im Ordner [`docs/`](docs/) und nutzt einen
+exakten Nachbau von `java.util.Random`: **Gleicher Seed = gleicher Dungeon** wie in der Java-Desktop-Version.
+Bestenliste, Erfolge und Einstellungen werden im Browser (localStorage) gespeichert.
+
 ---
 
 ## Inhaltsverzeichnis
@@ -225,6 +235,8 @@ src/
 ---
 
 ## Änderungen in Version 1.0.1
+
+- **Web-Version** (`docs/`) – spielbar im Browser über GitHub Pages
 
 - **Intro-Bildschirm** beim Start mit Credits (überspringbar per Taste/Klick)
 - **Start unter Windows repariert:** Start-Skripte mit Windows-Zeilenenden & Fehlermeldungen, Build für Java 21+, kein erzwungenes OpenGL mehr
