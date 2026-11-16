@@ -1,0 +1,19 @@
+# Build-Ausgaben
+out/
+out-test/
+sources.txt
+test_sources.txt
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+desktop.ini
